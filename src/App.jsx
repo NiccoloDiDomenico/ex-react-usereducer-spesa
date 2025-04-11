@@ -10,19 +10,43 @@ function App() {
     { name: 'Pane', price: 1.2 },
     { name: 'Latte', price: 1.0 },
     { name: 'Pasta', price: 0.7 },
-  ];
+  ]
 
-  const addToCart = (product) => {
-    const isProductAdded = addedProducts.some((p) => p.name === product.name);
+  const addToCart = (productToAdd) => {
+    const isProductAdded = addedProducts.some((p) => p.name === productToAdd.name);
     if (!isProductAdded) {
       setAddedProducts((curr) => [...curr, {
-        ...product,
+        ...productToAdd,
         quantity: 1
       }]);
     } else {
-      return;
+      updateProductQuantity(productToAdd);
     };
-  };
+  }
+
+  const updateProductQuantity = (productToUpdate, newQuantity) => {
+    setAddedProducts(curr =>
+      curr.map((p) => {
+        if (p.name === productToUpdate.name) {
+          return {
+            ...p,
+            quantity: newQuantity
+          }
+        }
+        return p;
+      })
+    );
+  }
+
+  const removeFromCart = (productToRemoved) => {
+    setAddedProducts((curr) =>
+      curr.filter((p) => p.name !== productToRemoved.name)
+    );
+  }
+
+  const totalPrice = addedProducts.reduce((acc, p) => {
+    return acc + (p.price * p.quantity)
+  }, 0)
 
   return (
     <>
@@ -42,9 +66,13 @@ function App() {
             <ol>
               {addedProducts.map((p, i) => (
                 <li key={i}>
-                  <span>Articolo: {p.name}, Prezzo: {p.price.toFixed(2)}€, Quantità: {p.quantity}</span>
+                  <label htmlFor="quantity">Quantità: </label>
+                  <input type="number" id='quantity' value={p.quantity} onChange={(e) => updateProductQuantity(p, e.target.value)} min="1" />
+                  <span>Articolo: {p.name}, Prezzo: {p.price.toFixed(2)}€</span>
+                  <button onClick={() => removeFromCart(p)}>Rimuovi dal carrello</button>
                 </li>
               ))}
+              <span><strong>Totale spesa: {totalPrice.toFixed(2)}€</strong></span>
             </ol>
           </>
         ) : (
